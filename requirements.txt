@@ -1,2 +1,15 @@
-transformers
+torch
 spacy
+datasets
+transformers
+pandas
+huggingface_hub
+# The following libraries might need to be added with specific versions if known or if they are available on PyPI:
+# peft
+# trl
+# vllm
+
+# Specifying versions can be done like this:
+# torch==1.10.0
+# spacy==3.0
+# transformers>=4.0,<5.0
