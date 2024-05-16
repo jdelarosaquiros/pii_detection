@@ -1,4 +1,4 @@
-# Detection of Personal Identifiable Information (PII) Using Large Language Models (LLMs)
+# Automated Detection of Personal Identifiable Information (PII) Using Large Language Models (LLMs)
 
  Utilizing Large Language Models (LLMs) to detect and remove PII from educational data.
 
