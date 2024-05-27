@@ -244,7 +244,7 @@ def generate_pii_dataset(model, tokenizer, sampling_params, texts: list[str], gr
         pii_dataset.append({'source_text': source_text, 'pii_text': pii_text, 'pii_data': pii_data, 'pii_labels': pii_labels})
 
     # Save the pii dataset to a json file
-    with open(output_dataset_name, 'w') as f:
+    with open(f"output_dataset_name.json", 'w') as f:
         json.dump(pii_dataset, f)
 
     return pii_dataset
