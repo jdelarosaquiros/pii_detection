@@ -251,8 +251,8 @@ def generate_pii_dataset(model, tokenizer, sampling_params, texts: list[str], gr
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output_dataset_name_path', type=str, default="pii_dataset")
-    parser.add_argument('--pii_raw_data', type=str, default="pii_raw_data.csv")
+    parser.add_argument('--output_dataset_name', type=str, default="pii_dataset")
+    parser.add_argument('--pii_raw_data_path', type=str, default="pii_raw_data.csv")
     parser.add_argument('--grouped_pii_samples_path', type=str, default=None)
     parser.add_argument('--max_data_size', type=int, default=None)
     parser.add_argument('--model', type=str, default="meta-llama/Meta-Llama-3-8B-Instruct")
