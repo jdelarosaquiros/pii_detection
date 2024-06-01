@@ -3,6 +3,8 @@ import json
 
 default_max_characters = 4000 # Equivalent to around 2000 tokens
 
+## Prompts
+
 # Prompt for generating a transition between a given source text, data, and type of data.
 # Note: the text could end with a complete or partial sentence, and the transition should connect it to the data.
 data_transition_prompt = '''You are given a text, data, and the type of the data. Your task is to connect the given text with the provided data by writing a transition between them. The transition should expand upon the given text and coherently connect the text to the data. If the text and data can be coherently connected without a transition, set the value of the key "transition" equal to an empty string like this "". Be sure to add punctuation where necessary.
@@ -39,6 +41,8 @@ Now complete the following, RESPONSE SHOULD ONLY BE IN JSON MAP FORMAT, NO OTHER
 [second text]: {second_text}
 [response]: '''
 
+## Few-shot Examples
+
 # List of input and output examoples for data_transition_prompt
 data_few_shot_examples = [
 {
@@ -61,6 +65,8 @@ text_few_shot_examples = [
 
 },
 ]
+
+## Utility Functions
 
 # Function to generate a prompt for appending a data to a text by writing a transition between them.
 def get_data_transition_prompt(tokenizer, text, data, data_type, max_characters=default_max_characters):
@@ -120,6 +126,7 @@ def process_generated_text(generated_text):
     if not generated_text:
         return default_output
 
+    # Try to parse the generated text as a JSON object. If it fails, try to fix the JSON object and parse it again. If it fails again, return an empty transition, and the other functions will insert the data without a transition.
     try:
         output = json.loads(generated_text)
     except:
@@ -129,9 +136,10 @@ def process_generated_text(generated_text):
             try:
                 output = json.loads(output)
             except:
-                print(f'Unexpected Error: {generated_text}')
+                print(f'Unexpected Error: {output}')
                 output = default_output
         else:
+            print(f'Unexpected Error: {generated_text}')
             output = default_output
     
 

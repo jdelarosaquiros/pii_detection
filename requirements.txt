@@ -10,3 +10,4 @@ vllm
 ipywidgets
 nltk 
 wonderwords
+termcolor
