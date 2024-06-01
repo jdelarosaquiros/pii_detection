@@ -7,3 +7,6 @@ huggingface_hub
 peft
 trl
 vllm
+ipywidgets
+nltk 
+wonderwords

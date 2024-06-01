@@ -24,7 +24,7 @@ from utils.pii_generation_utils import (
 )
 from utils.pii_injection_utils import (
     get_pii_list,
-    generate_outputs,
+    generate_transitions,
     get_data_transition_prompt,
     get_text_transition_prompt,
 )
@@ -211,14 +211,14 @@ def generate_pii_dataset(model, tokenizer, sampling_params, texts: list[str], gr
         second_texts = [' '.join(splitted_text[pii_insert_index:]) for splitted_text, pii_insert_index in zip(remaining_splitted_texts, pii_insertion_indexes)]
 
         data_transition_prompts = [get_data_transition_prompt(tokenizer, first_text, pii, label) for first_text, (pii, label) in zip(first_texts, remaining_pii_lists)]
-        outputs = generate_outputs(model, sampling_params, data_transition_prompts)
+        outputs = generate_transitions(model, sampling_params, data_transition_prompts)
         
         transitions_before = [output['transition'] for output in outputs]
 
         first_texts = [f"{first_text} {transition} {pii}" for first_text, transition, (pii, _) in zip(first_texts, transitions_before, remaining_pii_lists)]
 
         text_transition_prompts = [get_text_transition_prompt(tokenizer, first_text, second_text) for first_text, second_text in zip(first_texts, second_texts)]
-        outputs = generate_outputs(model, sampling_params, text_transition_prompts)
+        outputs = generate_transitions(model, sampling_params, text_transition_prompts)
 
         transitions_after = [output['transition'] for output in outputs]
 

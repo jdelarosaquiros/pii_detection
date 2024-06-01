@@ -24,7 +24,9 @@ from utils.pii_generation_utils import (
 )
 from utils.pii_injection_utils import (
     get_pii_list,
-    generate_outputs,
+    generate_transitions,
+)
+from utils.pii_prompt_utils import (
     get_data_transition_prompt,
     get_text_transition_prompt,
 )
@@ -187,9 +189,9 @@ def generate_pii_dataset(model, tokenizer, sampling_params, texts: list[str], gr
         # Divide text into sentences with nltk
         sentences = nltk.sent_tokenize(text)
 
-        # Randomly choose sentences to use as tex
+        # Randomly choose sentences to use as text
         num_sentences = random.randint(1, len(sentences))
-        sentences = random.sample(sentences, num_sentences)
+        sentences = sentences[:num_sentences]
 
         texts[i] = ' '.join(sentences)
 
@@ -211,21 +213,21 @@ def generate_pii_dataset(model, tokenizer, sampling_params, texts: list[str], gr
         second_texts = [' '.join(splitted_text[pii_insert_index:]) for splitted_text, pii_insert_index in zip(remaining_splitted_texts, pii_insertion_indexes)]
 
         data_transition_prompts = [get_data_transition_prompt(tokenizer, first_text, pii, label) for first_text, (pii, label) in zip(first_texts, remaining_pii_lists)]
-        outputs = generate_outputs(model, sampling_params, data_transition_prompts)
+        transitions = generate_transitions(model, sampling_params, data_transition_prompts)
         
-        transitions_before = [output['transition'] for output in outputs]
+        transitions_before = [transition for transition in transitions]
 
         first_texts = [f"{first_text} {transition} {pii}" for first_text, transition, (pii, _) in zip(first_texts, transitions_before, remaining_pii_lists)]
 
         text_transition_prompts = [get_text_transition_prompt(tokenizer, first_text, second_text) for first_text, second_text in zip(first_texts, second_texts)]
-        outputs = generate_outputs(model, sampling_params, text_transition_prompts)
+        transitions = generate_transitions(model, sampling_params, text_transition_prompts)
 
-        transitions_after = [output['transition'] for output in outputs]
+        transitions_after = [transition for transition in transitions]
 
 
         print(f"Inserting PII: {index+1}/{max_pii_list_length}")
         for splitted_text, pii_insert_index, transition_before, (pii, label), transition_after, split_by_sentence in zip(remaining_splitted_texts, pii_insertion_indexes, transitions_before, remaining_pii_lists, transitions_after, all_split_by_sentence):
-            if split_by_sentence and transition_after[0].isupper():
+            if split_by_sentence and transition_after.isupper():
                 first_text_sep_char = '. '
             else:
                 first_text_sep_char = ' '
@@ -244,7 +246,7 @@ def generate_pii_dataset(model, tokenizer, sampling_params, texts: list[str], gr
         pii_dataset.append({'source_text': source_text, 'pii_text': pii_text, 'pii_data': pii_data, 'pii_labels': pii_labels})
 
     # Save the pii dataset to a json file
-    with open(f"output_dataset_name.json", 'w') as f:
+    with open(f"{output_dataset_name}.json", 'w') as f:
         json.dump(pii_dataset, f)
 
     return pii_dataset
@@ -254,8 +256,8 @@ def main():
     parser.add_argument('--output_dataset_name', type=str, default="pii_dataset")
     parser.add_argument('--pii_raw_data_path', type=str, default="pii_raw_data.csv")
     parser.add_argument('--grouped_pii_samples_path', type=str, default=None)
-    parser.add_argument('--max_data_size', type=int, default=None)
-    parser.add_argument('--model', type=str, default="meta-llama/Meta-Llama-3-8B-Instruct")
+    parser.add_argument('--max_dataset_size', type=int, default=None)
+    parser.add_argument('--model', type=str, default="meta-llama/Meta-Llama-3-8B-Instruct") # Note: If using Llama, you should export your huggingface token: export HF_TOKEN=<your token>
     parser.add_argument('--gpu_util', type=float, default=0.9)
     parser.add_argument("--world_size",  type=int, default=1, help="world size to use multiple GPUs.")
     args = parser.parse_args()
@@ -286,7 +288,7 @@ def main():
     essay_dataset = load_dataset("qwedsacf/ivypanda-essays")
 
     # Generate PII Dataset
-    pii_dataset = generate_pii_dataset(model, tokenizer, sampling_params, essay_dataset['train']['TEXT'], grouped_pii_samples, args.output_dataset_name_path, max_dataset_size = args.max_data_size)
+    pii_dataset = generate_pii_dataset(model, tokenizer, sampling_params, essay_dataset['train']['TEXT'], grouped_pii_samples, args.output_dataset_name_path, max_dataset_size = args.max_dataset_size)
 
     print(f"\nFinished Generating PII Dataset with {len(pii_dataset)} samples\n")
 
