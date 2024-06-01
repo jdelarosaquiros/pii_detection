@@ -47,15 +47,17 @@ def main():
     parser.add_argument('--model', type=str, default="meta-llama/Meta-Llama-3-8B-Instruct") # Note: If using Llama, you should export your huggingface token: export HF_TOKEN=<your token>
     parser.add_argument('--gpu_util', type=float, default=0.9)
     parser.add_argument("--world_size",  type=int, default=1, help="world size to use multiple GPUs.")
-    parser.add_argument('--sample_index', type=int, default=0)
-    parser.add_argument('--text_index', type=int, default=0)
-    parser.add_argument('--max_piis', type=int, default=None)
+    parser.add_argument('--sample_index', type=int, default=0, help="Index of the sample to test")
+    parser.add_argument('--text_index', type=int, default=0, help="Index of the text to test")
+    parser.add_argument('--max_piis', type=int, default=None, help="Maximum number of PIIs to inject")
+    parser.add_argument('--split_by_sentence', type=bool, default=False, help="Whether to split the text by sentence")
 
     args = parser.parse_args()
 
     # Select which sample and text to test
     sample_index = args.sample_index
     text_index = args.text_index
+    split_by_sentence = args.split_by_sentence # Set to True to split the text by sentence
     max_piis = args.max_piis # Set to None to inject all PIIs or set to a number to inject a maximum number of PIIs
 
     # Load the model and tokenizer
@@ -93,7 +95,7 @@ def main():
     print(pii_list)
     print("#" * max([len(line) for line in str(pii_list).split('\n')]))
 
-    pii_text = generate_pii_text(model, tokenizer, sampling_params, text, pii_list, split_by_sentence=False, max_piis=max_piis)
+    pii_text = generate_pii_text(model, tokenizer, sampling_params, text, pii_list, split_by_sentence=split_by_sentence, max_piis=max_piis)
     print(f"{'#'*15} PII Text {'#'*15}")
     print(pii_text)
     print("#" * max([len(line) for line in pii_text.split('\n')]))
